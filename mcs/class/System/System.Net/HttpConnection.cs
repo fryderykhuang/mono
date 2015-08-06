@@ -446,7 +446,16 @@ namespace System.Net {
 			if (sock != null) {
 				Stream st = GetResponseStream ();
 				if (st != null)
-					st.Close ();
+				{
+					try
+					{
+						st.Close ();
+					}
+					catch (Exception ex)
+					{
+						System.Diagnostics.Trace.TraceWarning("Exception on closing network stream: {0}", ex);
+					}
+				}
 
 				o_stream = null;
 			}
