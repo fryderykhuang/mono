@@ -492,6 +492,8 @@ worker_park (void)
 
 	mono_gc_set_skip_thread (TRUE);
 
+	MONO_PREPARE_BLOCKING;
+
 	mono_mutex_lock (&threadpool->active_threads_lock);
 
 	if (!mono_runtime_is_shutting_down ()) {
@@ -505,6 +507,8 @@ worker_park (void)
 	}
 
 	mono_mutex_unlock (&threadpool->active_threads_lock);
+
+	MONO_FINISH_BLOCKING;
 
 	mono_gc_set_skip_thread (FALSE);
 
@@ -1304,7 +1308,7 @@ mono_threadpool_ms_end_invoke (MonoAsyncResult *ares, MonoArray **out_args, Mono
 		return NULL;
 	}
 
-	MONO_OBJECT_SETREF (ares, endinvoke_called, 1);
+	ares->endinvoke_called = 1;
 
 	/* wait until we are really finished */
 	if (ares->completed) {

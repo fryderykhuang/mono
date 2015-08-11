@@ -2071,6 +2071,7 @@ if test x$host_win32 = xno; then
 	AC_CHECK_FUNCS(readv writev preadv pwritev)
 	AC_CHECK_FUNCS(setpgid)
 	AC_CHECK_FUNCS(system)
+	AC_CHECK_FUNCS(fork execve)
 	AC_CHECK_SIZEOF(size_t)
 	AC_CHECK_TYPES([blksize_t], [AC_DEFINE(HAVE_BLKSIZE_T)], , 
 		[#include <sys/types.h>
@@ -2684,13 +2685,11 @@ XINERAMA="libXinerama.so.1"
 sizeof_register="SIZEOF_VOID_P"
 
 jit_wanted=true
-sgen_supported=false
 boehm_supported=true
 case "$host" in
 	mips*)
 		TARGET=MIPS;
 		arch_target=mips;
-		sgen_supported=true
 		ACCESS_UNALIGNED="no"
 
 		AC_MSG_CHECKING(for mips n32)
@@ -2729,25 +2728,20 @@ case "$host" in
 			# foo.c:6: warning: visibility attribute not supported in this configuration; ignored
 			# ld: fatal: relocation error: R_386_GOTOFF: file /var/tmp//ccxYR96k.o: symbol astruct: relocation must bind locally
 			have_visibility_hidden=no
-			sgen_supported=true
 			;;
 		  mingw*|cygwin*)
-			sgen_supported=true
 			have_visibility_hidden=no		  
 			;;
 		  haiku*)
 			LIBC=libroot.so
 			;;
 		  linux*)
-			sgen_supported=true
 			AOT_SUPPORTED="yes"
 			;;
 		  darwin*)
-			sgen_supported=true
 			AOT_SUPPORTED="yes"
 			;;
 		  openbsd*|freebsd*|kfreebsd-gnu*)
-			sgen_supported=true
 		        ;;
 		esac
 		;;
@@ -2760,18 +2754,14 @@ case "$host" in
 		fi
 		case $host_os in
 		  linux*)
-			sgen_supported=true
 			AOT_SUPPORTED="yes"
 			;;
 		  darwin*)
-			sgen_supported=true
 			AOT_SUPPORTED="yes"
 			;;
 		  openbsd*|freebsd*|kfreebsd-gnu*)
-			sgen_supported=true
 			;;
 		  mingw*)
-			sgen_supported=true
 			;;
 		esac
 		case "$host" in
@@ -2811,7 +2801,6 @@ case "$host" in
 		if test x"$AR" = xfalse; then
 			AC_MSG_ERROR([The required utility 'ar' is not found in your PATH. Usually it can be found in /usr/ccs/bin.])
 		fi
-		sgen_supported=true
 		;;
 	*-mingw*|*-*-cygwin*)
 		# When this is enabled, it leads to very strange crashes at runtime (gcc-3.4.4)
@@ -2831,7 +2820,6 @@ case "$host" in
 		arch_target=ppc;
 		case $host_os in
 		  linux*|darwin*)
-			sgen_supported=true
 			;;
 		esac
 		;;
@@ -2840,13 +2828,11 @@ case "$host" in
 		arch_target=arm;
 		ACCESS_UNALIGNED="no"
 		CPPFLAGS="$CPPFLAGS -D__ARM_EABI__"
-		sgen_supported=true
 		;;
 	arm*-linux*)
 		TARGET=ARM;
 		arch_target=arm;
 		ACCESS_UNALIGNED="no"
-		sgen_supported=true
 		AOT_SUPPORTED="yes"
 		CPPFLAGS="$CPPFLAGS -D__ARM_EABI__"
 		;;
@@ -2855,21 +2841,18 @@ case "$host" in
 #		TARGET=ARM;
 #		arch_target=arm;
 #		ACCESS_UNALIGNED="no"
-#		sgen_supported=true
 #		AOT_SUPPORTED="no"
 #		;;
 	aarch64-*)
 		# https://lkml.org/lkml/2012/7/15/133
 		TARGET=ARM64
 		arch_target=arm64
-		sgen_supported=true
 		boehm_supported=false
 		;;
 	s390x-*-linux*)
 		TARGET=S390X;
 		arch_target=s390x;
 		ACCESS_UNALIGNED="yes"
-		sgen_supported=true
 		CFLAGS="$CFLAGS -mbackchain -D__USE_STRING_INLINES"
 		;;
 esac
@@ -2968,7 +2951,6 @@ if test "x$host" != "x$target"; then
 		AC_DEFINE(TARGET_X86, 1, [...])
 		AC_DEFINE(TARGET_ANDROID, 1, [...])
 		CPPFLAGS="$CPPFLAGS"
-		sgen_supported=true
 		# Can't use tls, since it depends on the runtime detection of tls offsets
 		# in mono-compiler.h		
 		with_tls=pthread
@@ -2980,7 +2962,6 @@ if test "x$host" != "x$target"; then
 		AC_DEFINE(TARGET_AMD64, 1, [...])
 		AC_DEFINE(TARGET_ANDROID, 1, [...])
 		CPPFLAGS="$CPPFLAGS"
-		sgen_supported=true
 		# Can't use tls, since it depends on the runtime detection of tls offsets
 		# in mono-compiler.h
 		with_tls=pthread
@@ -2992,7 +2973,6 @@ if test "x$host" != "x$target"; then
 		AC_DEFINE(TARGET_AMD64, 1, [...])
 		AC_DEFINE(TARGET_PS4, 1, [...])
 		CPPFLAGS="$CPPFLAGS"
-		sgen_supported=true
 		# Can't use tls, since it depends on the runtime detection of tls offsets
 		# in mono-compiler.h
 		with_tls=pthread
@@ -3155,21 +3135,11 @@ fi
 dnl 
 dnl Simple Generational checks (sgen)
 dnl
-if $sgen_supported; then
-   build_sgen_default=yes
-else
-   build_sgen_default=no
-fi
 SGEN_DEFINES=
-AC_ARG_WITH(sgen, [  --with-sgen=yes,no             Extra Generational GC, default=yes],[buildsgen=$with_sgen],[buildsgen=$build_sgen_default])
+AC_ARG_WITH(sgen, [  --with-sgen=yes,no             Extra Generational GC, default=yes],[buildsgen=$with_sgen],[buildsgen=yes])
 if test x$buildsgen = xyes; then
-   if $sgen_supported; then
-       SGEN_DEFINES="-DHAVE_SGEN_GC -DHAVE_MOVING_COLLECTOR"
-       gc_msg="sgen and $gc_msg"
-   else
-       buildsgen=no
-       AC_MSG_WARN("Sgen is not supported on this platform")
-   fi
+   SGEN_DEFINES="-DHAVE_SGEN_GC -DHAVE_MOVING_COLLECTOR"
+   gc_msg="sgen and $gc_msg"
 fi
 AC_SUBST(SGEN_DEFINES)
 AM_CONDITIONAL(SUPPORT_SGEN, test x$buildsgen = xyes)
@@ -3498,6 +3468,13 @@ AC_ARG_WITH(cooperative_gc, [  --with-cooperative-gc=yes|no      Enable cooperat
 		AC_DEFINE(USE_COOP_GC,1,[Enable cooperative stop-the-world garbage collection.])
 	fi
 ], [with_cooperative_gc=no])
+
+AC_ARG_WITH(checked_build, [  --with-checked-build=yes|no      Enable checked build (expensive asserts)) (defaults to no)],[
+	if test x$with_checked_build != xno ; then
+		AC_DEFINE(CHECKED_BUILD,1,[Enable checked build.])
+	fi
+], [with_checked_build=no])
+
 
 AC_CHECK_HEADER([malloc.h], 
 		[AC_DEFINE([HAVE_USR_INCLUDE_MALLOC_H], [1], 

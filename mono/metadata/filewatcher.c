@@ -188,4 +188,3 @@ ves_icall_System_IO_InotifyWatcher_RemoveWatch (int fd, gint32 watch_descriptor)
 	return inotify_rm_watch (fd, watch_descriptor);
 }
 #endif
-

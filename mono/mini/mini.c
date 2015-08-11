@@ -3098,6 +3098,23 @@ static void
 mono_insert_safepoints (MonoCompile *cfg)
 {
 	MonoBasicBlock *bb;
+	if (cfg->method->wrapper_type == MONO_WRAPPER_MANAGED_TO_NATIVE) {
+		WrapperInfo *info = mono_marshal_get_wrapper_info (cfg->method);
+#if defined(__native_client__) || defined(__native_client_codegen__)
+		gpointer poll_func = &mono_nacl_gc;
+#elif defined(USE_COOP_GC)
+		gpointer poll_func = &mono_threads_state_poll;
+#else
+		gpointer poll_func = NULL;
+#endif
+
+		if (info && info->subtype == WRAPPER_SUBTYPE_ICALL_WRAPPER && info->d.icall.func == poll_func) {
+			if (cfg->verbose_level > 1)
+				printf ("SKIPPING SAFEPOINTS for the polling function icall\n");
+			return;
+		}
+	}
+
 
 	if (cfg->verbose_level > 1)
 		printf ("INSERTING SAFEPOINTS\n");
@@ -3568,6 +3585,8 @@ mini_method_compile (MonoMethod *method, guint32 opts, MonoDomain *domain, JitFl
 	/* Disable this for LLVM to make the IR easier to handle */
 	if (!COMPILE_LLVM (cfg))
 		mono_if_conversion (cfg);
+
+	MONO_SUSPEND_CHECK ();
 
 	/* Depth-first ordering on basic blocks */
 	cfg->bblocks = mono_mempool_alloc (cfg->mempool, sizeof (MonoBasicBlock*) * (cfg->num_bblocks + 1));
