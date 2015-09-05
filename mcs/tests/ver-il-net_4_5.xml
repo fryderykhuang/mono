@@ -19605,7 +19605,7 @@
   <test name="gtest-629.cs">
     <type name="Program">
       <method name="Void Main()" attrs="150">
-        <size>135</size>
+        <size>116</size>
       </method>
       <method name="Void .ctor()" attrs="6278">
         <size>7</size>
@@ -20691,6 +20691,38 @@
       </method>
       <method name="Void .ctor(Int32)" attrs="6278">
         <size>15</size>
+      </method>
+    </type>
+  </test>
+  <test name="gtest-autoproperty-20.cs">
+    <type name="BrokenOverrideProperty.BaseClass">
+      <method name="System.String get_Whatever()" attrs="2502">
+        <size>14</size>
+      </method>
+      <method name="Void set_Whatever(System.String)" attrs="2502">
+        <size>8</size>
+      </method>
+      <method name="Void .ctor(String)" attrs="6276">
+        <size>15</size>
+      </method>
+    </type>
+    <type name="BrokenOverrideProperty.DerivedClass">
+      <method name="System.String get_Whatever()" attrs="2246">
+        <size>14</size>
+      </method>
+      <method name="Void set_Whatever(System.String)" attrs="2246">
+        <size>20</size>
+      </method>
+      <method name="Void .ctor(String)" attrs="6278">
+        <size>9</size>
+      </method>
+    </type>
+    <type name="BrokenOverrideProperty.MainClass">
+      <method name="Int32 Main()" attrs="150">
+        <size>49</size>
+      </method>
+      <method name="Void .ctor()" attrs="6278">
+        <size>7</size>
       </method>
     </type>
   </test>
@@ -51636,6 +51668,19 @@
       </method>
     </type>
   </test>
+  <test name="test-927.cs">
+    <type name="MainClass">
+      <method name="Double[] GetTempBuffer()" attrs="150">
+        <size>27</size>
+      </method>
+      <method name="Int32 Main()" attrs="150">
+        <size>70</size>
+      </method>
+      <method name="Void .ctor()" attrs="6278">
+        <size>7</size>
+      </method>
+    </type>
+  </test>
   <test name="test-93.cs">
     <type name="N1.C">
       <method name="Void .ctor()" attrs="6278">
@@ -58356,7 +58401,7 @@
     </type>
     <type name="Program+&lt;OnReadHandle&gt;c__AnonStorey0">
       <method name="Int32 &lt;&gt;m__0(Int32)" attrs="131">
-        <size>55</size>
+        <size>47</size>
       </method>
       <method name="Void .ctor()" attrs="6278">
         <size>7</size>
@@ -69276,6 +69321,36 @@
     <type name="Test">
       <method name="Void Main()" attrs="150">
         <size>65</size>
+      </method>
+      <method name="Void .ctor()" attrs="6278">
+        <size>7</size>
+      </method>
+    </type>
+  </test>
+  <test name="test-null-operator-16.cs">
+    <type name="X">
+      <method name="Void Main()" attrs="150">
+        <size>307</size>
+      </method>
+      <method name="Void .ctor()" attrs="6278">
+        <size>7</size>
+      </method>
+    </type>
+    <type name="E">
+      <method name="System.String Foo(System.String, System.String)" attrs="150">
+        <size>14</size>
+      </method>
+    </type>
+  </test>
+  <test name="test-null-operator-17.cs">
+    <type name="A">
+      <method name="Void .ctor()" attrs="6278">
+        <size>7</size>
+      </method>
+    </type>
+    <type name="X">
+      <method name="Int32 Main()" attrs="150">
+        <size>61</size>
       </method>
       <method name="Void .ctor()" attrs="6278">
         <size>7</size>
